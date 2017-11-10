@@ -237,16 +237,23 @@ defmodule Firestorm.Forums do
 
   ## Examples
 
-      iex> create_thread(%{field: value})
+      iex> create_thread(category, user, %{field: value})
       {:ok, %Thread{}}
 
-      iex> create_thread(%{field: bad_value})
+      iex> create_thread(category, user, %{field: bad_value})
       {:error, %Ecto.Changeset{}}
 
   """
-  def create_thread(attrs \\ %{}) do
+  def create_thread(category, user, attrs \\ %{}) do
+    attrs =
+      attrs
+      |> Map.put(:category_id, category.id)
+      |> Map.delete(:body)
+    # We'll handle the user and the body in the attributes when creating a post,
+    # but we'll leave that for later.
+
     %Thread{}
-    |> Thread.changeset(attrs)
+    |> thread_changeset(attrs)
     |> Repo.insert()
   end
 
@@ -307,4 +314,17 @@ defmodule Firestorm.Forums do
   end
 
   def get_user_by_username(username), do: Repo.get_by(User, %{username: username})
+
+  alias Firestorm.Forums.Post
+
+  def create_post(%Thread{} = thread, %User{} = user, attrs) do
+    attrs =
+      attrs
+      |> Map.put(:thread_id, thread.id)
+      |> Map.put(:user_id, user.id)
+
+    %Post{}
+    |> Post.changeset(attrs)
+    |> Repo.insert()
+  end
 end
