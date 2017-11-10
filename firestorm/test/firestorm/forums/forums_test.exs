@@ -142,7 +142,7 @@ defmodule Firestorm.ForumsTest do
 
   test "create_thread/1 with invalid data returns error changeset" do
     category = fixture(:category, @create_category_attrs)
-    attrs = Map.put(@invalid_thread_attrs, :category_id, category.id)
+    _ = Map.put(@invalid_thread_attrs, :category_id, category.id)
     assert {:error, %Ecto.Changeset{}} = Forums.create_thread(@invalid_thread_attrs)
   end
 
