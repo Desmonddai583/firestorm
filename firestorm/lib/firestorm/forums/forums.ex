@@ -296,4 +296,15 @@ defmodule Firestorm.Forums do
   def change_thread(%Thread{} = thread) do
     Thread.changeset(thread, %{})
   end
+
+  def login_or_register_from_github(%{nickname: nickname, name: name, email: email}) do
+    case get_user_by_username(nickname) do
+      nil ->
+        create_user(%{email: email, name: name, username: nickname})
+      user ->
+        {:ok, user}
+    end
+  end
+
+  def get_user_by_username(username), do: Repo.get_by(User, %{username: username})
 end

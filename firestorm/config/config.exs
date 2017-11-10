@@ -25,3 +25,16 @@ config :logger, :console,
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{Mix.env}.exs"
+
+config :ueberauth, Ueberauth,
+  providers: [
+    # We don't need any permissions on GitHub as we're just using it as an
+    # identity provider, so we'll set an empty default scope.
+    github: {Ueberauth.Strategy.Github, [default_scope: ""]}
+  ]
+
+# We also need a github client id and secret. I've already generated an
+# application on github and I've stored these secrets somewhere...secret.
+config :ueberauth, Ueberauth.Strategy.Github.OAuth,
+  client_id: System.get_env("GITHUB_CLIENT_ID"),
+  client_secret: System.get_env("GITHUB_CLIENT_SECRET")

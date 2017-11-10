@@ -17,5 +17,6 @@ defmodule Firestorm.Forums.User do
     user
     |> cast(attrs, [:username, :email, :name])
     |> validate_required([:username, :email, :name])
+    |> unique_constraint(:username)
   end
 end

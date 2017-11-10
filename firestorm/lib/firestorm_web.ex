@@ -23,6 +23,7 @@ defmodule FirestormWeb do
       import Plug.Conn
       import FirestormWeb.Router.Helpers
       import FirestormWeb.Gettext
+      import Firestorm.Session
     end
   end
 
@@ -40,6 +41,7 @@ defmodule FirestormWeb do
       import FirestormWeb.Router.Helpers
       import FirestormWeb.ErrorHelpers
       import FirestormWeb.Gettext
+      import Firestorm.Session
     end
   end
 

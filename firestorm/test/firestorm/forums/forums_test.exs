@@ -173,4 +173,21 @@ defmodule Firestorm.ForumsTest do
     thread = fixture(:thread, category, @create_thread_attrs)
     assert %Ecto.Changeset{} = Forums.change_thread(thread)
   end
+
+  test "login_or_register_from_github/1 returns a user if it already exists" do
+    auth_info = %{
+      name: "Josh Adams",
+      nickname: "knewter",
+      email: "josh@dailydrip.com"
+    }
+    Forums.login_or_register_from_github(auth_info)
+    result = Forums.login_or_register_from_github(auth_info)
+    assert {:ok, user} = result
+    assert user.email == "josh@dailydrip.com"
+  end
+
+  test "get_user_by_username/1 returns an existing user" do
+    user = fixture(:user, @create_user_attrs)
+    assert user == Forums.get_user_by_username(user.username)
+  end
 end

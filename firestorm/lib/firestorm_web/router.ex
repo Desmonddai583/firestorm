@@ -2,6 +2,7 @@ defmodule FirestormWeb.Router do
   use FirestormWeb, :router
 
   pipeline :browser do
+    plug Ueberauth
     plug :accepts, ["html"]
     plug :fetch_session
     plug :fetch_flash
@@ -21,6 +22,16 @@ defmodule FirestormWeb.Router do
     resources "/categories", CategoryController do
       resources "/threads", ThreadController
     end
+  end
+
+  scope "/auth", FirestormWeb do
+    pipe_through :browser
+
+    delete "/logout", AuthController, :delete
+    get "/logout", AuthController, :delete
+    get "/:provider", AuthController, :request
+    get "/:provider/callback", AuthController, :callback
+    post "/:provider/callback", AuthController, :callback
   end
 
   # Other scopes may use custom stacks.
