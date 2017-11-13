@@ -1,15 +1,45 @@
-<h2>Show Category</h2>
+<div class="category-header">
+  <!-- We show the category title as the page header -->
+  <h2><%= link @category.title, to: category_path(@conn, :show, @category) %></h2>
+  <div class="spacer"></div>
+  <!--
+    We have a list of actions that appear on the right hand side.
+    For now, this is just the ability to create a new thread.
+  -->
+  <ul class="actions">
+    <li>
+      <a class="pure-button button-primary" href="<%= category_thread_path(@conn, :new, @category) %>">
+        <i class="fa fa-plus"></i>
+        New Thread
+      </a>
+    </li>
+  </ul>
+</div>
 
-<ul>
-
-  <li>
-    <strong>Title:</strong>
-    <%= @category.title %>
-  </li>
-
-</ul>
+<h3>Threads</h3>
+<ol class="thread-list">
+  <!-- We'll show a list item for each thread -->
+  <%= for thread <- @category.threads do %>
+    <li class="thread-list-item">
+      <!-- We link to each thread when you click its title -->
+      <div class="details">
+        <div class="summary">
+          <%= link thread.title, to: category_thread_path(@conn, :show, @category, thread), class: "title" %>
+        </div>
+        <div class="metadata">
+          <%= thread.inserted_at %>
+        </div>
+      </div>
+      <!--
+        We will ultimately show how many posts, and whether they're all read,
+        in the supplemental data.
+      -->
+      <div class="supplemental">
+        <div class="badge-block">1</div>
+      </div>
+    </li>
+  <% end %>
+</ol>
 
 <span><%= link "Edit", to: category_path(@conn, :edit, @category) %></span>
 <span><%= link "Back", to: category_path(@conn, :index) %></span>
-
-<span><%= link "New Thread", to: category_thread_path(@conn, :new, @category) %></span>

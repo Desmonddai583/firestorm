@@ -4,7 +4,6 @@
   <%= text_input f, :title, placeholder: "Type a title" %>
   <%= error_tag f, :title %>
   <%= textarea f, :body, placeholder: "Type thread content here. Use markdown syntax." %>
-  <!-- This bit right here is what you want -->
   <%= if Map.has_key?(@changeset.changes, :posts) do %>
     <%= error_tag hd(@changeset.changes.posts), :body %>
   <% end %>
