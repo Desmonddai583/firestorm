@@ -1,13 +1,13 @@
 defmodule Firestorm.Forums.Post do
   use Ecto.Schema
   import Ecto.Changeset
-  alias Firestorm.Forums.Post
-
+  alias Firestorm.Forums.{Post, User, Thread}
 
   schema "posts" do
     field :body, :string
-    field :thread_id, :id
-    field :user_id, :id
+
+    belongs_to :thread, Thread
+    belongs_to :user, User
 
     timestamps()
   end

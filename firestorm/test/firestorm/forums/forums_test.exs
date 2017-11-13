@@ -2,7 +2,7 @@ defmodule Firestorm.ForumsTest do
   use Firestorm.DataCase
 
   alias Firestorm.Forums
-  alias Firestorm.Forums.{User, Category, Thread, Post}
+  alias Firestorm.Forums.{User, Category, Thread}
 
   @create_user_attrs %{email: "some email", name: "some name", username: "some username"}
   @update_user_attrs %{email: "some updated email", name: "some updated name", username: "some updated username"}
@@ -25,6 +25,7 @@ defmodule Firestorm.ForumsTest do
     {:ok, category} = Forums.create_category(attrs)
     category
   end
+
   def fixture(:thread, category, user, attrs) do
     {:ok, thread} = Forums.create_thread(category, user, attrs)
     thread
@@ -125,17 +126,26 @@ defmodule Firestorm.ForumsTest do
 
     test "list_threads/1 returns all threads", %{category: category, user: user} do
       thread = fixture(:thread, category, user, @create_thread_attrs)
-      assert Forums.list_threads(category) == [thread]
+      expected = [thread.title]
+      result =
+        category
+        |> Forums.list_threads
+        |> Enum.map(&(&1.title))
+ 
+      assert expected == result
     end
 
     test "get_thread! returns the thread with given id", %{category: category, user: user} do
       thread = fixture(:thread, category, user, @create_thread_attrs)
-      assert Forums.get_thread!(category, thread.id) == thread
+      assert Forums.get_thread!(category, thread.id).title == thread.title
     end
 
-    test "create_thread/1 with valid data creates a thread", %{category: category, user: user} do
+    test "create_thread/1 with valid data creates a thread and its first post", %{category: category, user: user} do
       assert {:ok, %Thread{} = thread} = Forums.create_thread(category, user, @create_thread_attrs)
       assert thread.title == "some title"
+      first_post = hd(thread.posts)
+      assert first_post.thread_id == thread.id
+      assert first_post.body == "some body"
     end
 
     test "create_thread/1 with invalid data returns error changeset", %{category: category, user: user} do
@@ -152,7 +162,7 @@ defmodule Firestorm.ForumsTest do
     test "update_thread/2 with invalid data returns error changeset", %{category: category, user: user} do
       thread = fixture(:thread, category, user, @create_thread_attrs)
       assert {:error, %Ecto.Changeset{}} = Forums.update_thread(thread, @invalid_thread_attrs)
-      assert thread == Forums.get_thread!(category, thread.id)
+      assert thread.title == Forums.get_thread!(category, thread.id).title
     end
 
     test "delete_thread/1 deletes the thread", %{category: category, user: user} do
@@ -167,6 +177,22 @@ defmodule Firestorm.ForumsTest do
     end
   end
 
+  test "get_user_by_username/1 returns an existing user" do
+    user = fixture(:user, @create_user_attrs)
+    assert user == Forums.get_user_by_username(user.username)
+  end
+
+  test "login_or_register_from_github/1 returns a user after creating one" do
+    auth_info = %{
+      name: "Josh Adams",
+      nickname: "knewter",
+      email: "josh@dailydrip.com"
+    }
+    result = Forums.login_or_register_from_github(auth_info)
+    assert {:ok, user} = result
+    assert user.email == "josh@dailydrip.com"
+  end
+
   test "login_or_register_from_github/1 returns a user if it already exists" do
     auth_info = %{
       name: "Josh Adams",
@@ -179,16 +205,9 @@ defmodule Firestorm.ForumsTest do
     assert user.email == "josh@dailydrip.com"
   end
 
-  test "get_user_by_username/1 returns an existing user" do
-    user = fixture(:user, @create_user_attrs)
-    assert user == Forums.get_user_by_username(user.username)
-  end
-
   describe "posting in a thread" do
     setup [:create_user, :create_category, :create_thread]
 
-    # And we'll pass the thread and user when creating the post, verifying that
-    # it is created as expected.
     test "creating a post in a thread", %{thread: thread, user: user} do
       {:ok, post} = Forums.create_post(thread, user, %{body: "Some body"})
       assert post.thread_id == thread.id
@@ -201,8 +220,8 @@ defmodule Firestorm.ForumsTest do
     category = fixture(:category, @create_category_attrs)
     {:ok, category: category}
   end
-  def create_thread(%{category: category}) do
-    thread = fixture(:thread, category, @create_thread_attrs)
+  def create_thread(%{category: category, user: user}) do
+    thread = fixture(:thread, category, user, @create_thread_attrs)
     {:ok, thread: thread}
   end
   def create_user(_) do

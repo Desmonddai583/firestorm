@@ -1,13 +1,14 @@
 defmodule Firestorm.Forums.User do
   use Ecto.Schema
   import Ecto.Changeset
-  alias Firestorm.Forums.User
-
+  alias Firestorm.Forums.{User, Post}
 
   schema "users" do
     field :email, :string
     field :name, :string
     field :username, :string
+
+    has_many :posts, Post
 
     timestamps()
   end

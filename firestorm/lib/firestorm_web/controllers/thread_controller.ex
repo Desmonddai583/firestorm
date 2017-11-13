@@ -23,11 +23,7 @@ defmodule FirestormWeb.ThreadController do
   end
 
   def create(conn, %{"thread" => thread_params}, category) do
-    thread_params =
-      thread_params
-      |> Map.put("category_id", category.id)
-
-    case Forums.create_thread(thread_params) do
+    case Forums.create_thread(category, current_user(conn), %{title: thread_params["title"], body: thread_params["body"]}) do
       {:ok, thread} ->
         conn
         |> put_flash(:info, "Thread created successfully.")
