@@ -42,7 +42,8 @@ defmodule Firestorm.Mixfile do
       {:gettext, "~> 0.11"},
       {:cowboy, "~> 1.0"},
       {:ueberauth, "~> 0.4"},
-      {:ueberauth_github, "~> 0.4"}
+      {:ueberauth_github, "~> 0.4"},
+      {:earmark, "~> 1.2.2"},
     ]
   end
 
