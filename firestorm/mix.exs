@@ -44,6 +44,7 @@ defmodule Firestorm.Mixfile do
       {:ueberauth, "~> 0.4"},
       {:ueberauth_github, "~> 0.4"},
       {:earmark, "~> 1.2.2"},
+      {:wallaby, "~> 0.19.2", only: [:test]}
     ]
   end
 

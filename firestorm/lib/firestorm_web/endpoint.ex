@@ -1,6 +1,10 @@
 defmodule FirestormWeb.Endpoint do
   use Phoenix.Endpoint, otp_app: :firestorm
 
+  if Application.get_env(:firestorm, :sql_sandbox) do
+    plug Phoenix.Ecto.SQL.Sandbox
+  end
+
   socket "/socket", FirestormWeb.UserSocket
 
   # Serve at "/" the static files from "priv/static" directory.
