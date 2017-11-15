@@ -10,7 +10,7 @@ defmodule FirestormWeb.FeatureCase do
       import Ecto.Changeset
       import Ecto.Query
 
-      import FirestormWeb.Web.Router.Helpers
+      import FirestormWeb.Router.Helpers
     end
   end
 
