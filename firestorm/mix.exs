@@ -47,6 +47,8 @@ defmodule Firestorm.Mixfile do
       {:exmoji, "~> 0.2.2"},
       {:wallaby, "~> 0.19.2", only: [:test]},
       {:poison, "~> 3.0", override: true},
+      {:scrivener_ecto, "~> 1.2.2"},
+      {:scrivener_html, "~> 1.7"},
     ]
   end
 

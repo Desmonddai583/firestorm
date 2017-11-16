@@ -25,9 +25,10 @@ defmodule FirestormWeb.UserController do
     end
   end
 
-  def show(conn, %{"id" => id}) do
+  def show(conn, %{"id" => id} = params) do
     user = Forums.get_user!(id)
-    render(conn, "show.html", user: user)
+    posts_page = Forums.user_posts(user, %{page: params["page"]})
+    render(conn, "show.html", user: user, posts_page: posts_page)
   end
 
   def edit(conn, %{"id" => id}) do

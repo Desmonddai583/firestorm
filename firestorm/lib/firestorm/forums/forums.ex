@@ -397,4 +397,15 @@ defmodule Firestorm.Forums do
     |> Post.changeset(attrs)
     |> Repo.insert()
   end
+
+  def preload_posts(thing) do
+    thing
+    |> Repo.preload(:posts)
+  end
+
+  def user_posts(user, %{page: page}) do
+    Post
+    |> where([p], p.user_id == ^user.id)
+    |> Repo.paginate(page: page)
+  end
 end
