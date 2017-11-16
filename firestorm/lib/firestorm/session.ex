@@ -5,6 +5,7 @@ defmodule Firestorm.Session do
 
   alias Firestorm.Forums
 
+  def current_user(%{assigns: %{current_user: u}}), do: u
   def current_user(conn) do
     case get_current_user(conn) do
       nil ->
@@ -15,7 +16,7 @@ defmodule Firestorm.Session do
     end
   end
 
-  def logged_in?(conn), do: !!current_user(conn)
+  def logged_in?(conn), do: !!conn.assigns[:current_user]
 
   # NOTE: This exists primarily to aid in acceptance tests. We can trivially set
   # cookies in Wallaby, and this makes things easier in tests since logging in
