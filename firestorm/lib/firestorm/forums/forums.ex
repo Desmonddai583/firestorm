@@ -398,14 +398,21 @@ defmodule Firestorm.Forums do
     |> Repo.insert()
   end
 
-  def preload_posts(thing) do
-    thing
-    |> Repo.preload(:posts)
+  @doc """
+  Returns an `%Ecto.Changeset{}` for tracking post changes.
+  ## Examples
+      iex> change_post(post)
+      %Ecto.Changeset{source: %Post{}}
+  """
+  def change_post(%Post{} = post) do
+    post
+    |> Post.changeset(%{})
   end
 
   def user_posts(user, %{page: page}) do
     Post
     |> where([p], p.user_id == ^user.id)
+    |> preload([p], [thread: [:category]])
     |> Repo.paginate(page: page)
   end
 end
