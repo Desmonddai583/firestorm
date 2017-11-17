@@ -2,9 +2,11 @@ defmodule Firestorm.Forums.Thread do
   use Ecto.Schema
   import Ecto.Changeset
   alias Firestorm.Forums.{Thread, Category, Post}
+  alias Firestorm.Forums.Slugs.ThreadTitleSlug
 
   schema "threads" do
     field :title, :string
+    field :slug, ThreadTitleSlug.Type
 
     belongs_to :category, Category
     has_many :posts, Post
@@ -17,6 +19,8 @@ defmodule Firestorm.Forums.Thread do
     thread
     |> cast(attrs, [:title, :category_id])
     |> validate_required([:title, :category_id])
+    |> ThreadTitleSlug.maybe_generate_slug
+    |> ThreadTitleSlug.unique_constraint
   end
 
   def new_thread_changeset(%{thread: thread_attrs, post: post_attrs}) do

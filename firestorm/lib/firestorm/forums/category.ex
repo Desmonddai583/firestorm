@@ -2,9 +2,11 @@ defmodule Firestorm.Forums.Category do
   use Ecto.Schema
   import Ecto.Changeset
   alias Firestorm.Forums.{Category, Thread}
+  alias Firestorm.Forums.Slugs.CategoryTitleSlug
 
   schema "categories" do
     field :title, :string
+    field :slug, CategoryTitleSlug.Type
     has_many :threads, Thread
 
     timestamps()
@@ -15,5 +17,7 @@ defmodule Firestorm.Forums.Category do
     category
     |> cast(attrs, [:title])
     |> validate_required([:title])
+    |> CategoryTitleSlug.maybe_generate_slug
+    |> CategoryTitleSlug.unique_constraint
   end
 end

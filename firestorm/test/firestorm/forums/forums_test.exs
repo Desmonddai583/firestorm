@@ -88,6 +88,13 @@ defmodule Firestorm.ForumsTest do
     assert Forums.get_category!(category.id) == category
   end
 
+  test "create_category/1 automatically generates a slug" do
+    assert {:ok, %Category{} = category} = Forums.create_category(@create_category_attrs)
+    assert category.slug == "some-title"
+    assert {:ok, %Category{} = category} = Forums.create_category(@create_category_attrs)
+    assert category.slug == "some-title-1"
+  end
+
   test "create_category/1 with valid data creates a category" do
     assert {:ok, %Category{} = category} = Forums.create_category(@create_category_attrs)
     assert category.title == "some title"
@@ -138,6 +145,13 @@ defmodule Firestorm.ForumsTest do
     test "get_thread! returns the thread with given id", %{category: category, user: user} do
       thread = fixture(:thread, category, user, @create_thread_attrs)
       assert Forums.get_thread!(category, thread.id).title == thread.title
+    end
+
+    test "create_thread/2 automatically generates a slug", %{category: category, user: user} do
+      assert {:ok, %Thread{} = thread} = Forums.create_thread(category, user, @create_thread_attrs)
+      assert thread.slug == "some-title"
+      assert {:ok, %Thread{} = thread} = Forums.create_thread(category, user, @create_thread_attrs)
+      assert thread.slug == "some-title-1"
     end
 
     test "create_thread/1 with valid data creates a thread and its first post", %{category: category, user: user} do
