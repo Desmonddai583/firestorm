@@ -8,7 +8,7 @@ defmodule Firestorm.Forums do
   alias Firestorm.Repo
   alias FirestormWeb.Notifications
 
-  alias Firestorm.Forums.{User, Category, Thread, Post}
+  alias Firestorm.Forums.{User, Category, Thread, Post, Watch}
 
   @doc """
   Returns the list of users.
@@ -432,5 +432,54 @@ defmodule Firestorm.Forums do
     |> where([p], p.user_id == ^user.id)
     |> preload([p], [thread: [:category]])
     |> Repo.paginate(page: page)
+  end
+
+  @doc """
+  Have a user watch a thread:
+
+      iex> %User{} |> watch(%Thread{})
+      {:ok, %Watch{}}
+
+  """
+  def watch(%User{} = user, %Thread{} = thread) do
+    thread
+    |> Ecto.build_assoc(:watches, %{user_id: user.id})
+    |> Watch.changeset(%{})
+    |> Repo.insert()
+  end
+
+  @doc """
+  Determine if a user is watching a given watchable (Thread, etc):
+
+      iex> %Thread{} |> watched_by?(%User{})
+      false
+
+  """
+  def watched_by?(watchable, user = %User{}) do
+    watch_count(watchable, user) > 0
+  end
+
+  def watcher_ids(watchable) do
+    watchable
+    |> watches()
+    |> select([f], f.user_id)
+    |> Repo.all
+  end
+
+  def watch_count(watchable) do
+    watchable
+    |> watches()
+    |> Repo.aggregate(:count, :id)
+  end
+  defp watch_count(watchable, user = %User{}) do
+    watchable
+    |> watches()
+    |> where([f], f.user_id == ^user.id)
+    |> Repo.aggregate(:count, :id)
+  end
+
+  defp watches(watchable) do
+    watchable
+    |> Ecto.assoc(:watches)
   end
 end

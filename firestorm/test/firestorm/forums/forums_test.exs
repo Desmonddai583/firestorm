@@ -191,6 +191,15 @@ defmodule Firestorm.ForumsTest do
     end
   end
 
+  describe "watching a thread" do
+    setup [:create_user, :create_category, :create_thread]
+
+    test "watching a thread", %{thread: thread, user: user} do
+      {:ok, _watch} = user |> Forums.watch(thread)
+      assert thread |> Forums.watched_by?(user)
+    end
+  end
+
   test "get_user_by_username/1 returns an existing user" do
     user = fixture(:user, @create_user_attrs)
     assert user == Forums.get_user_by_username(user.username)

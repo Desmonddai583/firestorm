@@ -26,7 +26,7 @@ defmodule FirestormWeb.InboundController do
            # in the future.
     else
       _ ->
-       # FIXME: Maybe I want to report failures to a logging service here.
+        nil
     end
     send_resp(conn, 200, "ok")
   end
