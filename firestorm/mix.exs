@@ -49,6 +49,7 @@ defmodule Firestorm.Mixfile do
       {:poison, "~> 3.0", override: true},
       {:scrivener_ecto, "~> 1.2.2"},
       {:scrivener_html, "~> 1.7"},
+      {:bamboo, github: "thoughtbot/bamboo"},
     ]
   end
 

@@ -44,3 +44,12 @@ config :scrivener_html,
   # We'll start with the bootstrap view_style, but eventually we'll define our
   # own.
   view_style: :bootstrap
+
+# I already have an environment variable with my API Key
+config :firestorm, FirestormWeb.Mailer,
+  adapter: Bamboo.SendGridAdapter,
+  api_key: System.get_env("SENDGRID_API_KEY")
+
+# Import environment specific config. This must remain at the bottom
+# of this file so it overrides the configuration defined above.
+import_config "#{Mix.env}.exs"
