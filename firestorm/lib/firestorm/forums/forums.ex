@@ -215,6 +215,21 @@ defmodule Firestorm.Forums do
   end
 
   @doc """
+  Gets a single user by email address. Maybe.
+  """
+  def get_user_by_email(email), do: Repo.get_by(User, %{email: email})
+  # ...
+  @doc """
+  Gets a thread by id.
+
+  Maybe returns a thread.
+  """
+  def get_thread(id) do
+    Thread
+    |> Repo.get(id)
+  end
+
+  @doc """
   Gets a single thread in a category.
 
   Raises `Ecto.NoResultsError` if the Thread does not exist in that category.

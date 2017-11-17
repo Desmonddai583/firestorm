@@ -42,4 +42,10 @@ defmodule FirestormWeb.Router do
 
     resources "/preview", PreviewController, only: [:create]
   end
+
+  scope "/inbound", FirestormWeb do
+    pipe_through :api
+
+    post "/sendgrid", InboundController, :sendgrid
+  end
 end
