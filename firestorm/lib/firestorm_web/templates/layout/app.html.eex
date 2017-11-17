@@ -7,8 +7,9 @@
     <meta name="description" content="">
     <meta name="author" content="">
 
-    <!-- We obviously should have a decent title, for starters -->
-    <title>Firestorm</title>
+    <!-- We'll pass in the conn so it can be used when
+         generating the title string -->
+    <title><%= page_title(@conn) %></title>
     <%= {:safe, css_link_tag()} %>
     <!-- We bring in fontawesome because it's awesome -->
     <script src="https://use.fontawesome.com/b706cffc0a.js"></script>
