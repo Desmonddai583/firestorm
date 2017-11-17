@@ -34,6 +34,24 @@ const Preview = {
   }
 };
 
+const UploadSignature = {
+  create: (filename, mimetype) => {
+    const payload = {
+      upload: {
+        filename,
+        mimetype
+      }
+    };
+    const fetch = createFetch(
+      commonStack,
+      method("POST"),
+      body(JSON.stringify(payload), "application/json")
+    );
+
+    return fetch("/upload_signature");
+  }
+};
+
 const Api = {
   Preview
 };

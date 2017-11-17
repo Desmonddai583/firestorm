@@ -51,6 +51,8 @@ defmodule Firestorm.Mixfile do
       {:scrivener_html, "~> 1.7"},
       {:bamboo, github: "thoughtbot/bamboo"},
       {:ecto_autoslug_field, "~> 0.3.0"},
+      {:uuid, "~> 1.1"},
+      {:timex, "~> 3.1.15"},
     ]
   end
 
