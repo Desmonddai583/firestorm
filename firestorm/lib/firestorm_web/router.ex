@@ -37,8 +37,9 @@ defmodule FirestormWeb.Router do
     post "/:provider/callback", AuthController, :callback
   end
 
-  # Other scopes may use custom stacks.
-  # scope "/api", FirestormWeb do
-  #   pipe_through :api
-  # end
+  scope "/api/v1", FirestormWeb.Api.V1 do
+    pipe_through :api
+
+    resources "/preview", PreviewController, only: [:create]
+  end
 end

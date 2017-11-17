@@ -1,6 +1,7 @@
 const $ = require("jquery");
 
 import Prism from "prismjs";
+import Api from "../api";
 import "prismjs/themes/prism-solarizedlight.css";
 import "prismjs/components/prism-elixir";
 import "prismjs/components/prism-erlang";
@@ -20,7 +21,24 @@ function decorate() {
 }
 
 function preview() {
-  console.log("TODO: Implement markdown preview!");
+  // We'll use jQuery to fetch the elements we need to interact with
+  const textareaSelector = ".post-editor textarea";
+  const previewContentSelector = ".post-preview .content";
+  const $textarea = $(textareaSelector);
+  const $previewContent = $(previewContentSelector);
+
+  // We'll define a function that gets the value out of the post body textarea,
+  // posts it to our API, and updates the preview content with the response HTML
+  const updatePreview = () => {
+    const body = $textarea.val();
+    Api.Preview.create(body).then(response => {
+      $previewContent.html(response.jsonData.data.html);
+    });
+  };
+
+  // Finally, we'll wire up the textarea to fire the function each time its
+  // value changes.
+  $textarea.on("keyup change", updatePreview);
 }
 
 const Posts = {
