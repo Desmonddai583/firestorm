@@ -24,3 +24,5 @@ config :wallaby, screenshot_on_failure: true
 
 config :firestorm, FirestormWeb.Mailer,
   adapter: Bamboo.TestAdapter
+
+config :bamboo, :refute_timeout, 10

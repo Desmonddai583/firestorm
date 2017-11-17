@@ -5,7 +5,7 @@ defmodule FirestormWeb.ThreadController do
   alias Firestorm.Forums
   alias Firestorm.Forums.Thread
 
-  plug FirestormWeb.Plugs.RequireUser when action in [:new, :create]
+  plug FirestormWeb.Plugs.RequireUser when action in [:new, :create, :watch, :unwatch]
 
   def action(conn, _) do
     category = Forums.get_category!(conn.params["category_id"])
@@ -43,7 +43,14 @@ defmodule FirestormWeb.ThreadController do
 
     [ first_post | posts ] = thread.posts
 
-    render(conn, "show.html", thread: thread, category: category, first_post: first_post, posts: posts)
+    watched =
+      if current_user(conn) do
+        thread |> Forums.watched_by?(current_user(conn))
+      else
+        false
+      end
+
+    render(conn, "show.html", thread: thread, category: category, first_post: first_post, posts: posts, watched: watched)
   end
 
   def edit(conn, %{"id" => id}, category) do
@@ -72,5 +79,27 @@ defmodule FirestormWeb.ThreadController do
     conn
     |> put_flash(:info, "Thread deleted successfully.")
     |> redirect(to: category_thread_path(conn, :index, category))
+  end
+
+  def watch(conn, %{"id" => id}, category) do
+    thread =
+      Forums.get_thread!(category, id)
+
+    current_user(conn)
+    |> Forums.watch(thread)
+
+    conn
+    |> redirect(to: category_thread_path(conn, :show, category.id, id))
+  end
+
+  def unwatch(conn, %{"id" => id}, category) do
+    thread =
+      Forums.get_thread!(category, id)
+
+    current_user(conn)
+    |> Forums.unwatch(thread)
+
+    conn
+    |> redirect(to: category_thread_path(conn, :show, category.id, id))
   end
 end

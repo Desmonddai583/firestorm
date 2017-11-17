@@ -449,6 +449,25 @@ defmodule Firestorm.Forums do
   end
 
   @doc """
+  Ensure a user no longer watches a thread:
+
+      iex> %User{} |> unwatch(%Thread{})
+      :ok
+
+  """
+  def unwatch(%User{} = user, %Thread{} = thread) do
+    # Here we'll use a table name as a string, rather than a schema, as our
+    # primary source query. You can do this if you want to interact with a
+    # database without going through Schemas.
+    "threads_watches"
+    |> where(assoc_id: ^thread.id)
+    |> where(user_id: ^user.id)
+    |> Repo.delete_all()
+
+    :ok
+  end
+
+  @doc """
   Determine if a user is watching a given watchable (Thread, etc):
 
       iex> %Thread{} |> watched_by?(%User{})
