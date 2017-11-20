@@ -41,6 +41,8 @@ defmodule Firestorm.Mixfile do
       {:phoenix_live_reload, "~> 1.0", only: :dev},
       {:gettext, "~> 0.11"},
       {:cowboy, "~> 1.0"},
+      {:comeonin, "~> 3.0.2"},
+      {:ueberauth_identity, "~> 0.2.3"},
       {:ueberauth, "~> 0.4"},
       {:ueberauth_github, "~> 0.4"},
       {:earmark, "1.2.2"},

@@ -30,7 +30,10 @@ config :ueberauth, Ueberauth,
   providers: [
     # We don't need any permissions on GitHub as we're just using it as an
     # identity provider, so we'll set an empty default scope.
-    github: {Ueberauth.Strategy.Github, [default_scope: ""]}
+    github: {Ueberauth.Strategy.Github, [default_scope: ""]},
+    identity: {Ueberauth.Strategy.Identity, [
+      callback_methods: ["POST"]
+    ]},
   ]
 
 # We also need a github client id and secret. I've already generated an

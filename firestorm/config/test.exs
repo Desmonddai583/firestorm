@@ -26,3 +26,6 @@ config :firestorm, FirestormWeb.Mailer,
   adapter: Bamboo.TestAdapter
 
 config :bamboo, :refute_timeout, 10
+
+config :comeonin, :bcrypt_log_rounds, 4
+config :comeonin, :pbkdf2_rounds, 1
