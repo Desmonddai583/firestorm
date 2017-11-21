@@ -17,4 +17,4 @@ config :firestorm, Firestorm.Repo,
   username: System.get_env("DATABASE_USERNAME"),
   password: System.get_env("DATABASE_PASSWORD"),
   database: "firestorm_prod",
-  pool_size: 20
+  pool_size: 15
