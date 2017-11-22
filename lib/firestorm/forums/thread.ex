@@ -7,6 +7,9 @@ defmodule Firestorm.Forums.Thread do
   schema "threads" do
     field :title, :string
     field :slug, ThreadTitleSlug.Type
+    field :first_post, {:map, %Post{}}, virtual: true
+    field :posts_count, :integer, virtual: true
+    field :completely_read?, :boolean, virtual: true
 
     belongs_to :category, Category
     has_many :posts, Post

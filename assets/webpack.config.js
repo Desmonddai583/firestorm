@@ -69,11 +69,6 @@ module.exports = {
         test: /\.(eot|svg|ttf|woff|woff2)$/,
         loader: "file-loader?name=fonts/[name].[ext]"
       },
-      // If we load woff files we'll run them through the url-loader
-      {
-        test: /\.woff(2)?(\?v=[0-9]\.[0-9]\.[0-9])?$/,
-        loader: "url-loader?limit=10000&mimetype=application/font-woff"
-      },
       // And any svg files will also go through the file loader
       {
         test: /\.(svg)(\?v=[0-9]\.[0-9]\.[0-9])?$/,
@@ -84,7 +79,8 @@ module.exports = {
   // We'll configure the webpack dev server to serve its content from our assets
   // directory
   devServer: {
-    contentBase: staticDir
+    contentBase: staticDir,
+    headers: { "Access-Control-Allow-Origin": "*" }
   },
   // And we'll configure our ExtractTextPlugin and CopyWebpackPlugin
   plugins: [

@@ -11,6 +11,12 @@ defmodule FirestormWeb.AuthController do
     render(conn, "request.html", callback_url: Helpers.callback_url(conn), changeset: changeset)
   end
 
+  def login(conn, _params) do
+    conn
+    |> put_layout("login.html")
+    |> render("login.html")
+  end
+
   # Users can log out - we just drop their session
   def delete(conn, _params) do
     conn

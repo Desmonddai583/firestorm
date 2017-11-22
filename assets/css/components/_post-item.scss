@@ -5,5 +5,9 @@
     background-color: rgba($punch, 0.03);
   }
   > .body {
+    margin-top: $margin-medium;
+    img {
+      max-width: 100%;
+    }
   }
 }

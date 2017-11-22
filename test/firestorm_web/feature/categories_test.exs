@@ -1,6 +1,7 @@
 defmodule FirestormWeb.Feature.CategoriesTest do
   use FirestormWeb.FeatureCase, async: true
   alias Firestorm.Forums
+  alias FirestormWeb.Endpoint
 
   test "categories are listed", %{session: session} do
     import Page.Category.Index
@@ -23,6 +24,22 @@ defmodule FirestormWeb.Feature.CategoriesTest do
     |> fill_in(title_field(), with: "Erlang")
     |> click(create_category_button())
     |> assert_has(Show.category_title("Erlang"))
+  end
+
+  test "category show shows posts count for threads", %{session: session} do
+    import Page.Category.Show
+    {:ok, [elixir, _elm]} = create_categories(["Elixir", "Elm"])
+    {:ok, user} = Forums.create_user(%{username: "knewter", email: "josh@dailydrip.com", name: "Josh Adams"})
+    otp_is_cool_parameters = %{title: "OTP is cool", body: "Don't you think?"}
+    {:ok, otp_is_cool} = Forums.create_thread(elixir, user, otp_is_cool_parameters)
+    {:ok, _post} = Forums.create_post(otp_is_cool, user, %{body: "Yup"})
+
+    session
+    |> visit(category_path(Endpoint, :show, elixir.id))
+    |> all(threads(1))
+    |> List.first()
+    |> assert_has(thread_title("OTP is cool"))
+    |> assert_has(thread_posts_count(2, completely_read?: false))
   end
 
   def create_categories(titles) do

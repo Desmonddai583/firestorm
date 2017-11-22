@@ -6,7 +6,7 @@ defmodule FirestormWeb.Feature.ThreadsTest do
 
   test "creating a new thread", %{session: session} do
     import Page.Thread.{New, Show}
-    import Page.Category.Show
+    import Page.Category.Show, only: [new_thread_link: 0]
     {:ok, [elixir]} = create_categories(["Elixir"])
     {:ok, user} = Forums.create_user(%{username: "knewter", email: "josh@dailydrip.com", name: "Josh Adams"})
 
@@ -54,7 +54,7 @@ defmodule FirestormWeb.Feature.ThreadsTest do
     |> click(reply_button())
     |> assert_has(thread_title(@otp_is_cool_parameters[:title]))
     |> assert_has(post_item("I agree!"))
-    |> assert_has(post_username("knewter"))
+    |> assert_has(post_username("knewter", 2))
   end
 
   test "watching a thread", %{session: session} do

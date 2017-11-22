@@ -42,6 +42,7 @@ defmodule Firestorm.Mixfile do
       {:gettext, "~> 0.11"},
       {:cowboy, "~> 1.0"},
       {:comeonin, "~> 3.0.2"},
+      {:exgravatar, "~> 2.0.0"},
       {:ueberauth_identity, "~> 0.2.3"},
       {:ueberauth, "~> 0.4"},
       {:ueberauth_github, "~> 0.4"},
