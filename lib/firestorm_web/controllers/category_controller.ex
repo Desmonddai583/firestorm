@@ -33,7 +33,7 @@ defmodule FirestormWeb.CategoryController do
 
     threads =
       category
-      |> Forums.list_threads()
+      |> Forums.list_threads(current_user(conn))
 
     render(conn, "show.html", category: category, threads: threads)
   end

@@ -8,7 +8,14 @@ defmodule Firestorm.Forums do
   alias Firestorm.Repo
   alias FirestormWeb.Notifications
 
-  alias Firestorm.Forums.{User, Category, Thread, Post, Watch}
+  alias Firestorm.Forums.{
+    User, 
+    Category, 
+    Thread, 
+    Post, 
+    Watch,
+    View
+  }
 
   @doc """
   Returns the list of users.
@@ -245,10 +252,9 @@ defmodule Firestorm.Forums do
       posts_count = length(thread.posts)
       completely_read? =
         if user do
-          # TODO: Return true if the user has completely read this thread -
-          # i.e., if each post has a corresponding view in the database for the
-          # user
-          false
+          # FIXME: This is insanely inefficient, lol?
+          thread.posts
+          |> Enum.all?(fn(post) -> post |> viewed_by?(user) end)
         else
           false
         end
@@ -542,5 +548,47 @@ defmodule Firestorm.Forums do
   defp watches(watchable) do
     watchable
     |> Ecto.assoc(:watches)
+  end
+
+  @doc """
+  Indicate a user viewed a post:
+
+      iex> %User{} |> view(%Post{})
+      {:ok, %Post{}}
+
+  """
+  def view(%User{} = user, %Post{} = post) do
+    post
+    |> Ecto.build_assoc(:views, %{user_id: user.id})
+    |> View.changeset(%{})
+    |> Repo.insert()
+  end
+
+  @doc """
+  Determine if a user has viewed a given viewable (Post, etc):
+
+      iex> %Post{} |> viewed_by?(%User{})
+      false
+
+  """
+  def viewed_by?(viewable, user = %User{}) do
+    view_count(viewable, user) > 0
+  end
+
+  def view_count(viewable) do
+    viewable
+    |> views()
+    |> Repo.aggregate(:count, :id)
+  end
+  defp view_count(viewable, user = %User{}) do
+    viewable
+    |> views()
+    |> where([f], f.user_id == ^user.id)
+    |> Repo.aggregate(:count, :id)
+  end
+
+  defp views(viewable) do
+    viewable
+    |> Ecto.assoc(:views)
   end
 end

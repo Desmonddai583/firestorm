@@ -200,6 +200,21 @@ defmodule Firestorm.ForumsTest do
     end
   end
 
+  describe "viewing a post" do
+    setup [:create_user, :create_category, :create_thread]
+
+    test "viewing a post", %{thread: thread, user: user} do
+      thread =
+        thread
+        |> Repo.preload(:posts)
+
+      [first_post] = thread.posts
+
+      {:ok, _view} = user |> Forums.view(first_post)
+      assert first_post |> Forums.viewed_by?(user)
+    end
+  end
+
   test "get_user_by_username/1 returns an existing user" do
     user = fixture(:user, @create_user_attrs)
     assert user == Forums.get_user_by_username(user.username)

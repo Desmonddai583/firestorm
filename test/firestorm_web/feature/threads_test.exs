@@ -31,12 +31,6 @@ defmodule FirestormWeb.Feature.ThreadsTest do
     |> assert_has(error("You must be logged in to access this page."))
   end
 
-  defp log_in_as(session, user) do
-    session
-    |> visit("/")
-    |> Browser.set_cookie("current_user", user.id)
-  end
-
   test "replying to a thread", %{session: session} do
     import Page.Thread.Show
     import Page.Post.New
