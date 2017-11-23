@@ -4,16 +4,16 @@
       <img src="<%= avatar_url(@post.user) %>" class="user-avatar -borderless" />
     </div>
     <%= link "@#{@post.user.username}", to: user_path(@conn, :show, @post.user_id), class: "username" %>
-    <%= @post.inserted_at %>
+    <%= time_abbr @post.inserted_at %>
   </div>
   <div class="body">
     <%= markdown(@post.body) %>
   </div>
 
   <div class="post-item-actions">
-    <div class="reactions">
+<%#     <div class="reactions">
       🦀
-    </div>
+    </div> %>
     <div class="spacer"></div>
     <ul class="actions">
       <li>
@@ -21,7 +21,7 @@
           <i class="fa fa-link"></i>
         </a>
       </li>
-      <li class="reaction">
+      <%# <li class="reaction">
         <a class="reaction-picker" href="#">
           <i class="emoticon-faces"></i>
         </a>
@@ -30,7 +30,7 @@
         <a href="#">
           <i class="fa fa-quote-right"></i>
         </a>
-      </li>
+      </li> %>
       <li class="reply">
         <%= link to: category_thread_post_path(@conn, :new, @category, @thread) do %>
           <i class="fa fa-reply"></i>

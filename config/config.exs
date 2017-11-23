@@ -15,7 +15,8 @@ config :firestorm, FirestormWeb.Endpoint,
   secret_key_base: "cxR15LVDp04mh3ZoV0GuJ9mB26TM3KcYbJ/OnysFJD9KfYmeNqr+Re3geFPrgocA",
   render_errors: [view: FirestormWeb.ErrorView, accepts: ~w(html json)],
   pubsub: [name: Firestorm.PubSub,
-           adapter: Phoenix.PubSub.PG2]
+           adapter: Phoenix.PubSub.PG2],
+  instrumenters: [PryIn.Instrumenter]
 
 # Configures Elixir's Logger
 config :logger, :console,
@@ -58,6 +59,19 @@ config :firestorm, :aws,
   secret_access_key: System.get_env("AWS_SECRET_ACCESS_KEY"),
   bucket: System.get_env("AWS_S3_BUCKET"),
   region: System.get_env("AWS_S3_REGION")
+
+config :scrivener_html,
+  routes_helper: FirestormWeb.Router.Helpers,
+  view_style: :bootstrap_v4
+
+config :pryin,
+  api_key: System.get_env("PRYIN_API_KEY"),
+  otp_app: :firestorm,
+  enabled: false,
+  env: :dev
+
+config :firestorm, Firestorm.Repo,
+  loggers: [PryIn.EctoLogger, Ecto.LogEntry]
 
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.

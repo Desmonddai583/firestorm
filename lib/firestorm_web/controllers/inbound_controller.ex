@@ -14,8 +14,8 @@ defmodule FirestormWeb.InboundController do
     from_email_param = params["from"]
     to_email = params["to"]
 
-    with [_,from_email|_] <- Regex.run(@email_regex, from_email_param),
-         [_,thread_id|_] <- Regex.run(@thread_email_regex, to_email),
+    with [_, from_email|_] <- Regex.run(@email_regex, from_email_param),
+         [_, thread_id|_] <- Regex.run(@thread_email_regex, to_email),
          # We'll need to introduce a way to get a thread just by its id - so far
          # we haven't provided that. I have no real justification here.
          thread when not is_nil(thread) <- Forums.get_thread(thread_id),

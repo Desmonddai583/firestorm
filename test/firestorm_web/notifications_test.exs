@@ -25,5 +25,6 @@ defmodule FirestormWeb.NotificationsTest do
     assert_delivered_email FirestormWeb.Emails.thread_new_post_notification(user, otp_is_cool, yup)
     # The involved user doesn't since he's not watching
     refute_delivered_email FirestormWeb.Emails.thread_new_post_notification(bob, otp_is_cool, yup)
+    assert 1 == Enum.count(Forums.notifications_for(user))
   end
 end

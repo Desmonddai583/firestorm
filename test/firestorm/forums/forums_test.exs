@@ -31,6 +31,11 @@ defmodule Firestorm.ForumsTest do
     thread
   end
 
+  def fixture(:post, thread, user, attrs) do
+    {:ok, post} = Forums.create_post(thread, user, attrs)
+    post
+  end
+
   test "list_users/1 returns all users" do
     user = fixture(:user, @create_user_attrs)
     assert Forums.list_users() == [user]
@@ -142,6 +147,37 @@ defmodule Firestorm.ForumsTest do
       assert expected == result
     end
 
+    test "recent_threads/1 returns a category's threads ordered by most recent post", %{category: category, user: user} do
+      threads =
+        for num <- ~w(First Second Third Fourth Fifth) do
+          fixture(:thread, category, user, %{title: "#{num} thread", body: "#{num} thread body"})
+        end
+      for thread <- threads do
+        for n <- [2, 3, 4] do
+          fixture(:post, thread, user, %{body: "Post #{n} in #{thread.title}"})
+        end
+      end
+      [thread1, thread2, thread3, thread4, thread5] = threads
+      :timer.sleep 1
+      fixture(:post, thread1, user, %{body: "last post in thread1"})
+      fixture(:post, thread3, user, %{body: "last post in thread2"})
+      fixture(:post, thread5, user, %{body: "last post in thread3"})
+      other_category = fixture(:category, %{title: "other category"})
+      other_thread = fixture(:thread, other_category, user, %{title: "other thread", body: "other thread body"})
+      _other_thread_post = fixture(:post, other_thread, user, %{body: "Other thread last post"})
+
+      recent_threads =
+        category
+        |> Forums.recent_threads()
+
+      thread_ids =
+        recent_threads
+        |> Enum.map(&(&1.id))
+
+      expected_ids = [thread5.id, thread3.id, thread1.id, thread4.id, thread2.id]
+      assert expected_ids == thread_ids
+    end
+
     test "get_thread! returns the thread with given id", %{category: category, user: user} do
       thread = fixture(:thread, category, user, @create_thread_attrs)
       assert Forums.get_thread!(category, thread.id).title == thread.title
@@ -215,20 +251,49 @@ defmodule Firestorm.ForumsTest do
     end
   end
 
+  describe "notifications" do
+    setup [:create_user, :create_category, :create_thread]
+
+    test "getting a user's notifications when there aren't any", %{user: user} do
+      assert [] = Forums.notifications_for(user)
+    end
+
+    test "getting a user's notifications", %{user: user} do
+      body = "You are looking dapper today!"
+      {:ok, _} = Forums.notify(user, body)
+      [first_notification | _] = Forums.notifications_for(user)
+      assert body == first_notification.body
+    end
+  end
+
   test "get_user_by_username/1 returns an existing user" do
     user = fixture(:user, @create_user_attrs)
     assert user == Forums.get_user_by_username(user.username)
   end
 
-  test "login_or_register_from_github/1 returns a user after creating one" do
-    auth_info = %{
-      name: "Josh Adams",
-      nickname: "knewter",
-      email: "josh@dailydrip.com"
-    }
-    result = Forums.login_or_register_from_github(auth_info)
-    assert {:ok, user} = result
-    assert user.email == "josh@dailydrip.com"
+  describe "login_or_register_from_github/1 returns a user after creating one" do
+    test "when the user has name and public email on GitHub" do
+      auth_info = %{
+        name: "Josh Adams",
+        nickname: "knewter",
+        email: "josh@dailydrip.com"
+      }
+      result = Forums.login_or_register_from_github(auth_info)
+      assert {:ok, user} = result
+      assert user.email == "josh@dailydrip.com"
+    end
+
+    test "when the user doesn't have name and public email on GitHub" do
+      auth_info = %{
+        name: nil,
+        nickname: "knewter",
+        email: nil,
+      }
+      result = Forums.login_or_register_from_github(auth_info)
+      assert {:ok, user} = result
+      assert user.name == "knewter"
+      assert user.email == "knewter@users.noreply.github.com"
+    end
   end
 
   test "login_or_register_from_github/1 returns a user if it already exists" do

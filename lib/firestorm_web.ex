@@ -24,6 +24,7 @@ defmodule FirestormWeb do
       import FirestormWeb.Router.Helpers
       import FirestormWeb.Gettext
       import Firestorm.Session
+      import FirestormWeb.Policy
     end
   end
 
@@ -38,7 +39,8 @@ defmodule FirestormWeb do
         get_flash: 1, 
         get_flash: 2, 
         view_module: 1,
-        action_name: 1
+        action_name: 1,
+        current_path: 1
       ]
 
       # Use all HTML functionality (forms, tags, etc)
@@ -49,6 +51,10 @@ defmodule FirestormWeb do
       import FirestormWeb.Gettext
       import Firestorm.Session
       import FirestormWeb.ViewHelpers
+      import FirestormWeb.TagHelpers
+      alias FirestormWeb.{
+        CategoryView
+      }
     end
   end
 

@@ -9,6 +9,7 @@ defmodule FirestormWeb.Router do
     plug :protect_from_forgery
     plug :put_secure_browser_headers
     plug FirestormWeb.Plugs.CurrentUser
+    plug FirestormWeb.Plugs.Notifications
   end
 
   pipeline :api do
@@ -18,9 +19,11 @@ defmodule FirestormWeb.Router do
   scope "/", FirestormWeb do
     pipe_through :browser # Use the default browser stack
 
-    get "/", CategoryController, :index
+    get "/", ThreadController, :recent
     get "/login", AuthController, :login
-    resources "/users", UserController
+    resources "/users", UserController, only: [:index, :edit, :update, :show]
+    get "/threads/watching", ThreadController, :watching
+    get "/threads/participating", ThreadController, :participating
     resources "/categories", CategoryController do
       get "/threads/:id/watch", ThreadController, :watch
       get "/threads/:id/unwatch", ThreadController, :unwatch

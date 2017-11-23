@@ -3,6 +3,7 @@ defmodule Firestorm.Forums do
   The Forums context.
   """
 
+  use Bodyguard.Policy, policy: Firestorm.Forums.Policy
   import Ecto.Query, warn: false
   # alias Ecto.Multi
   alias Firestorm.Repo
@@ -14,7 +15,8 @@ defmodule Firestorm.Forums do
     Thread, 
     Post, 
     Watch,
-    View
+    View,
+    Notification
   }
 
   @doc """
@@ -28,6 +30,12 @@ defmodule Firestorm.Forums do
   """
   def list_users do
     Repo.all(User)
+  end
+
+  def paginate_users(page) do
+    User
+    |> order_by([p], [desc: p.inserted_at])
+    |> Repo.paginate(page: page)
   end
 
   @doc """
@@ -119,6 +127,8 @@ defmodule Firestorm.Forums do
 
   def login_or_register_from_identity(%{username: username, password: password}) do
     import Comeonin.Bcrypt, only: [checkpw: 2]
+    alias FirestormWeb.Endpoint
+    require Endpoint
 
     case get_user_by_username(username) do
       nil ->
@@ -127,13 +137,15 @@ defmodule Firestorm.Forums do
       user ->
         # We'll check the password with checkpw against the user's stored
         # password hash
-        case checkpw(password, user.password_hash) do
-          true ->
-            # Everything checks out, success
-            {:ok, user}
-          _ ->
-            # User existed, we checked the password, but no dice
-            {:error, "No user found with that username or password"}
+        Endpoint.instrument :pryin, %{key: "Forums.login_or_register_from_identity#checkpw"}, fn ->
+          case checkpw(password, user.password_hash) do
+            true ->
+              # Everything checks out, success
+              {:ok, user}
+            _ ->
+              # User existed, we checked the password, but no dice
+              {:error, "No user found with that username or password"}
+          end
         end
     end
   end
@@ -150,7 +162,38 @@ defmodule Firestorm.Forums do
 
   """
   def list_categories do
-    Repo.all(Category)
+    Category
+    |> order_by([asc: :slug])
+    |> Repo.all()
+  end
+
+  @doc """
+  Takes a list of categories and returns them as well as a map of category ids to recent threads.
+  """
+  def get_recent_threads_for_categories(categories, user) do
+    threads =
+      Thread
+      |> join(:left_lateral, [t], p in fragment("SELECT thread_id, inserted_at FROM posts WHERE posts.thread_id = ? ORDER BY posts.inserted_at DESC LIMIT 1", t.id))
+      |> order_by([t, p], [desc: p.inserted_at])
+      |> where([t, p], t.category_id in ^(Enum.map(categories, &(&1.id))))
+      |> limit(3)
+      |> select([t], t)
+      |> Repo.all()
+      |> Repo.preload(posts: from(p in Post, order_by: p.inserted_at, preload: :user))
+      |> decorate_threads(user)
+
+    initial_threads_map =
+      for category <- categories, into: %{} do
+        {category.id, []}
+      end
+
+    threads_map =
+      threads
+      |> Enum.reduce(initial_threads_map, fn(thread, acc) ->
+        Map.update(acc, thread.category_id, [thread], fn(cat_threads) -> cat_threads ++ [thread] end)
+      end)
+
+    {categories, threads_map}
   end
 
   @doc """
@@ -237,7 +280,8 @@ defmodule Firestorm.Forums do
   alias Firestorm.Forums.Thread
 
   @doc """
-  Returns the list of threads for a given category. If provided a user, will determine whether each thread has been completely read or not.Returns the list of threads for a given category. If provided a user, will determine whether each thread has been completely read or not.
+  Returns the list of threads for a given category. If provided a user, will
+  determine whether each thread has been completely read or not.
   ## Examples
       iex> list_threads(category)
       [%Thread{}, ...]
@@ -247,6 +291,34 @@ defmodule Firestorm.Forums do
     |> where([t], t.category_id == ^category.id)
     |> preload(posts: :user)
     |> Repo.all
+    |> decorate_threads(user)
+  end
+
+  @doc """
+  Returns the threads in a given category ordered by those with the most recent
+  posts. If provided a user, will determine whether each thread has been
+  completely read or not.
+  ## Examples
+      iex> recent_threads(category)
+      [%Thread{}, ...]
+  """
+  def recent_threads(category, user \\ nil) do
+    Thread
+    |> join(:left_lateral, [t], p in fragment("SELECT thread_id, inserted_at FROM posts WHERE posts.thread_id = ? ORDER BY posts.inserted_at DESC LIMIT 1", t.id))
+    |> order_by([t, p], [desc: p.inserted_at])
+    |> where(category_id: ^category.id)
+    |> select([t], t)
+    |> Repo.all
+    |> Repo.preload(posts: from(p in Post, order_by: p.inserted_at, preload: :user))
+    |> decorate_threads(user)
+  end
+
+  # Decorate a list of threads with:
+  # - first_post
+  # - posts_count
+  # - completely_read?
+  defp decorate_threads(threads, user) do
+    threads
     |> Enum.map(fn(thread) ->
       first_post = Enum.at(thread.posts, 0)
       posts_count = length(thread.posts)
@@ -438,6 +510,14 @@ defmodule Firestorm.Forums do
     Thread.changeset(thread, %{})
   end
 
+  def login_or_register_from_github(%{nickname: nickname, name: nil, email: _email} = user) do
+    login_or_register_from_github(%{user | name: nickname})
+  end
+
+  def login_or_register_from_github(%{nickname: nickname, name: _name, email: nil} = user) do
+    login_or_register_from_github(%{user | email: nickname <> "@users.noreply.github.com"})
+  end
+
   def login_or_register_from_github(%{nickname: nickname, name: name, email: email}) do
     case get_user_by_username(nickname) do
       nil ->
@@ -478,8 +558,28 @@ defmodule Firestorm.Forums do
   def user_posts(user, %{page: page}) do
     Post
     |> where([p], p.user_id == ^user.id)
+    |> order_by([p], [desc: p.inserted_at])
     |> preload([p], [thread: [:category], user: []])
     |> Repo.paginate(page: page)
+  end
+
+  def user_last_post(user) do
+    Post
+    |> where([p], p.user_id == ^user.id)
+    |> order_by([p], [desc: p.inserted_at])
+    |> limit(1)
+    |> Repo.one
+  end
+
+  # FIXME: Should track when users log in rather than proxying that by
+  # pretending them making a view always happens when they're on the site.
+  def user_last_seen(user) do
+    "posts_views"
+      |> where([v], v.user_id == ^user.id)
+      |> order_by([v], [desc: v.inserted_at])
+      |> select([v], v.inserted_at)
+      |> limit(1)
+      |> Repo.one
   end
 
   @doc """
@@ -522,7 +622,7 @@ defmodule Firestorm.Forums do
       false
 
   """
-  def watched_by?(watchable, user = %User{}) do
+  def watched_by?(watchable, %User{} = user) do
     watch_count(watchable, user) > 0
   end
 
@@ -550,6 +650,43 @@ defmodule Firestorm.Forums do
     |> Ecto.assoc(:watches)
   end
 
+  def home_threads(user_or_nil) do
+    Thread
+    |> join(:left_lateral, [t], p in fragment("SELECT thread_id, inserted_at FROM posts WHERE posts.thread_id = ? ORDER BY posts.inserted_at DESC LIMIT 1", t.id))
+    |> order_by([t, p], [desc: p.inserted_at])
+    |> select([t], t)
+    |> Repo.all
+    |> Repo.preload(posts: from(p in Post, order_by: p.inserted_at, preload: :user))
+    |> Repo.preload(:category)
+    |> decorate_threads(user_or_nil)
+  end
+
+  def watched_threads(%User{} = user) do
+    "threads_watches"
+    |> where([w], w.user_id == ^user.id)
+    |> select([w], w.assoc_id)
+    |> Repo.all()
+    |> get_decorated_threads(user)
+  end
+
+  def participating_threads(%User{} = user) do
+    Post
+    |> where([p], p.user_id == ^user.id)
+    |> select([p], p.thread_id)
+    |> Repo.all()
+    |> get_decorated_threads(user)
+  end
+
+  defp get_decorated_threads(thread_ids, user) do
+    Thread
+    |> join(:left_lateral, [t], p in fragment("SELECT thread_id, inserted_at FROM posts WHERE posts.thread_id = ? ORDER BY posts.inserted_at DESC LIMIT 1", t.id))
+    |> where([t], t.id in ^thread_ids)
+    |> order_by([t, p], [desc: p.inserted_at])
+    |> preload([category: [], posts: [:user]])
+    |> Repo.all
+    |> decorate_threads(user)
+  end
+
   @doc """
   Indicate a user viewed a post:
 
@@ -571,7 +708,7 @@ defmodule Firestorm.Forums do
       false
 
   """
-  def viewed_by?(viewable, user = %User{}) do
+  def viewed_by?(viewable, %User{} = user) do
     view_count(viewable, user) > 0
   end
 
@@ -590,5 +727,24 @@ defmodule Firestorm.Forums do
   defp views(viewable) do
     viewable
     |> Ecto.assoc(:views)
+  end
+
+  def notifications_for(%User{} = user) do
+    Notification
+    |> where([n], n.user_id == ^user.id)
+    |> Repo.all()
+  end
+
+  @doc """
+  Send a notification to a user:
+
+      iex> %User{} |> notify("Nice shoes")
+      {:ok, %Notification{}}
+
+  """
+  def notify(%User{} = user, body) do
+    %Notification{}
+    |> Notification.changeset(%{body: body, user_id: user.id})
+    |> Repo.insert()
   end
 end

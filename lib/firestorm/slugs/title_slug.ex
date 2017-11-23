@@ -1,4 +1,9 @@
 defmodule Firestorm.Forums.Slugs.TitleSlug do
+  @moduledoc """
+  Module that makes it easy to create title slugs that autogenerate unique
+  titles.
+  """
+  
   # In order to facilitate `use`ing the module, we need to define a macro called
   # `__using__`. We accept a single argument, the module that we want to use for
   # the uniqueness check. We'll use this later.

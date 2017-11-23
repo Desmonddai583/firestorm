@@ -5,12 +5,16 @@ defmodule FirestormWeb.ThreadController do
   alias Firestorm.Forums
   alias Firestorm.Forums.Thread
 
-  plug FirestormWeb.Plugs.RequireUser when action in [:new, :create, :watch, :unwatch]
+  plug FirestormWeb.Plugs.RequireUser when action in [:new, :create, :watch, :unwatch, :participating, :watching]
 
   def action(conn, _) do
-    category = Forums.get_category!(conn.params["category_id"])
-    args = [conn, conn.params, category]
-    apply(__MODULE__, action_name(conn), args)
+    if(conn.params["category_id"]) do
+      category = Forums.get_category!(conn.params["category_id"])
+      args = [conn, conn.params, category]
+      apply(__MODULE__, action_name(conn), args)
+    else
+      apply(__MODULE__, action_name(conn), [conn, conn.params])
+    end
   end
 
   def index(conn, _params, category) do
@@ -36,12 +40,32 @@ defmodule FirestormWeb.ThreadController do
     end
   end
 
+  def recent(conn, _params) do
+    threads =
+      conn
+      |> current_user()
+      |> Forums.home_threads()
+
+    render(conn, "recent.html", threads: threads)
+  end
+
+  def watching(conn, _params) do
+    threads = Forums.watched_threads(current_user(conn))
+    render(conn, "watching.html", threads: threads)
+  end
+
+  def participating(conn, _params) do
+    threads = Forums.participating_threads(current_user(conn))
+    render(conn, "participating.html", threads: threads)
+  end
+
   def show(conn, %{"id" => id}, category) do
     thread =
-      Forums.get_thread!(category, id)
+      category
+      |> Forums.get_thread!(id)
       |> Repo.preload(posts: [:user])
 
-    [ first_post | posts ] = thread.posts
+    [first_post | posts] = thread.posts
 
     watched =
       if current_user(conn) do
@@ -94,7 +118,8 @@ defmodule FirestormWeb.ThreadController do
     thread =
       Forums.get_thread!(category, id)
 
-    current_user(conn)
+    conn
+    |> current_user()
     |> Forums.watch(thread)
 
     conn
@@ -105,7 +130,8 @@ defmodule FirestormWeb.ThreadController do
     thread =
       Forums.get_thread!(category, id)
 
-    current_user(conn)
+    conn
+    |> current_user()
     |> Forums.unwatch(thread)
 
     conn

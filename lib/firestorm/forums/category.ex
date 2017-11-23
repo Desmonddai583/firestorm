@@ -1,4 +1,8 @@
 defmodule Firestorm.Forums.Category do
+  @moduledoc """
+  Schema for forum categories.
+  """
+  
   use Ecto.Schema
   import Ecto.Changeset
   alias Firestorm.Forums.{Category, Thread}

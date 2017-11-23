@@ -2,10 +2,15 @@ defmodule FirestormWeb.CategoryController do
   use FirestormWeb, :controller
 
   alias Firestorm.Forums
+  alias FirestormWeb.Plugs.RequireUser
   alias Firestorm.Forums.Category
 
+  plug RequireUser when action in [:new, :create]
+
   def index(conn, _params) do
-    categories = Forums.list_categories()
+    categories =
+      Forums.list_categories()
+
     render(conn, "index.html", categories: categories)
   end
 
@@ -29,11 +34,10 @@ defmodule FirestormWeb.CategoryController do
     category =
       id
       |> Forums.get_category!
-      |> Firestorm.Repo.preload(:threads)
 
     threads =
       category
-      |> Forums.list_threads(current_user(conn))
+      |> Forums.recent_threads(current_user(conn))
 
     render(conn, "show.html", category: category, threads: threads)
   end

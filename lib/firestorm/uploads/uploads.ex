@@ -1,4 +1,8 @@
 defmodule Firestorm.Uploads do
+  @moduledoc """
+  Context for managing file uploads.
+  """
+  
   alias Firestorm.Uploads.AWS.UploadSignature
 
   def sign(filename, mimetype) do
