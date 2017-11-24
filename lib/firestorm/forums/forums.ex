@@ -751,9 +751,18 @@ defmodule Firestorm.Forums do
       {:ok, %Notification{}}
 
   """
-  def notify(%User{} = user, body) do
+  def notify(%User{} = user,  %{subject: subject, body: body, url: url}) do
     %Notification{}
-    |> Notification.changeset(%{body: body, user_id: user.id})
+    |> Notification.changeset(%{body: body, subject: subject, url: url, user_id: user.id})
     |> Repo.insert()
+  end
+
+  @doc """
+  Gets a notification by id.
+  Maybe returns a notification.
+  """
+  def get_notification(id) do
+    Notification
+    |> Repo.get(id)
   end
 end

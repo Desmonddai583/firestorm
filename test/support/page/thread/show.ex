@@ -11,7 +11,7 @@ defmodule Page.Thread.Show do
 
   def watched_icon(), do: css(".fa-eye.-highlight")
 
-  def oembed_for(url) do
+  def oembed_for(_url) do
     # FIXME: It would be ideal to do this:
     # css(".oembed-for[data-oembed-url='#{url}']")
     # but it failed for dumb reasons so we're just doing this for now.

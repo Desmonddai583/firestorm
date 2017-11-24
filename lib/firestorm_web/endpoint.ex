@@ -42,7 +42,10 @@ defmodule FirestormWeb.Endpoint do
     key: "_firestorm_key",
     signing_salt: "CJOjN9U+"
 
-  plug PryIn.Plug
+  if Application.get_env(:firestorm, :use_pryin) do
+    plug PryIn.Plug
+  end
+
   plug FirestormWeb.Router
 
   @doc """

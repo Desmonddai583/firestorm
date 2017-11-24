@@ -7,7 +7,7 @@ defmodule FirestormWeb.OembedExtractor do
     # 2-tuple containing the url in question and the oembed result for it.
     body
     |> get_urls_from_string()
-    |> Task.async_stream(fn url -> {url, OEmbed.for(url)} end)
+    |> Task.async_stream(fn url -> {url, FirestormWeb.OEmbed.for(url)} end)
     # If OEmbed.for failed for the url, we'll just filter it out.
     |> Enum.filter(&successful_oembed?/1)
     # Then we have this awkward pattern match that turns the result into what we
@@ -16,8 +16,8 @@ defmodule FirestormWeb.OembedExtractor do
   end
 
   # We add a basic function to filter out failed embeds
-  defp successful_oembed?({:ok, {url, {:ok, _data}}}), do: true
-  defp successful_oembed?(x) do
+  defp successful_oembed?({:ok, {_url, {:ok, _data}}}), do: true
+  defp successful_oembed?(_x) do
     false
   end
 
