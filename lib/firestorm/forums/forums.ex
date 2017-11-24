@@ -8,6 +8,7 @@ defmodule Firestorm.Forums do
   # alias Ecto.Multi
   alias Firestorm.Repo
   alias FirestormWeb.Notifications
+  alias FirestormWeb.OembedExtractor
 
   alias Firestorm.Forums.{
     User, 
@@ -530,6 +531,14 @@ defmodule Firestorm.Forums do
   def get_user_by_username(username), do: Repo.get_by(User, %{username: username})
 
   alias Firestorm.Forums.Post
+
+  def decorate_post_oembeds(%Post{} = post) do
+    oembeds =
+      post.body
+      |> OembedExtractor.get_embeds()
+
+    %Post{ post | oembeds: oembeds }
+  end
 
   def create_post(%Thread{} = thread, %User{} = user, attrs) do
     attrs =

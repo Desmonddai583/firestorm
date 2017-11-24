@@ -79,4 +79,17 @@ defmodule FirestormWeb.Feature.ThreadsTest do
       end
     {:ok, categories}
   end
+
+  test "thread posts have oembeds rendered", %{session: session} do
+    import Page.Thread.Show
+
+    {:ok, [elixir]} = create_categories(["Elixir"])
+    {:ok, user} = Forums.create_user(%{username: "knewter", email: "josh@dailydrip.com", name: "Josh Adams"})
+    {:ok, otp_is_cool} = Forums.create_thread(elixir, user, %{title: "Thread with oEmbed in the first post", body: "This is a cool video, check it out: https://www.youtube.com/watch?v=H686MDn4Lo8"})
+
+    session
+    |> log_in_as(user)
+    |> visit(category_thread_path(FirestormWeb.Endpoint, :show, elixir, otp_is_cool))
+    |> assert_has(oembed_for("https://www.youtube.com/watch?v=H686MDn4Lo8"))
+  end
 end

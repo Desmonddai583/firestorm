@@ -51,6 +51,7 @@ defmodule Firestorm.Mixfile do
       {:ueberauth_github, "~> 0.4"},
       {:earmark, "1.2.2"},
       {:exmoji, "~> 0.2.2"},
+      {:oembed, "~> 0.1.1"},
       {:wallaby, "~> 0.19.2", only: [:test]},
       {:credo, "~> 0.8", only: [:dev, :test], runtime: false},
       {:poison, "~> 3.0", override: true},

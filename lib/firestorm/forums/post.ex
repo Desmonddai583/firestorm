@@ -9,6 +9,7 @@ defmodule Firestorm.Forums.Post do
 
   schema "posts" do
     field :body, :string
+    field :oembeds, :any, virtual: true
 
     belongs_to :thread, Thread
     belongs_to :user, User
