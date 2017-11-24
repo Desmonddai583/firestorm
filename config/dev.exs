@@ -18,8 +18,8 @@ config :firestorm, FirestormWeb.Endpoint,
       "--hot",
       "--stdin",
       "--host", "localhost",
-      "--port", "8080",
-      "--public", "localhost:8080",
+      "--port", "8081",
+      "--public", "localhost:8081",
       "--config", "webpack.config.js",
       cd: Path.expand("../assets", __DIR__)
     ]
