@@ -46,6 +46,7 @@ defmodule FirestormWeb.Endpoint do
     plug PryIn.Plug
   end
 
+  use Appsignal.Phoenix
   plug FirestormWeb.Router
 
   @doc """

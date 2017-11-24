@@ -1,5 +1,6 @@
 defmodule FirestormWeb.StoreChannel do
   use FirestormWeb, :channel
+  use Appsignal.Instrumentation.Decorators
   alias Firestorm.Store.{ReplenishResponse, ReplenishRequest}
   alias FirestormWeb.Api.V1.FetchView
   alias Firestorm.Forums
@@ -21,6 +22,7 @@ defmodule FirestormWeb.StoreChannel do
   # that requests the data in bulk rather than requesting each in its own SQL
   # query, but it's low on my priority list until the rest of Firestorm is
   # finished.
+  @decorate channel_action()
   def handle_in("fetch", replenish_request, socket) do
     replenish_request = Poison.decode!(Poison.encode!(replenish_request), as: %ReplenishRequest{})
 
@@ -45,6 +47,7 @@ defmodule FirestormWeb.StoreChannel do
     {:reply, {:ok, FetchView.render("index.json", %ReplenishResponse{categories: categories, threads: threads, posts: posts, users: users})}, socket}
   end
 
+  @decorate channel_action()
   def handle_in("fetch_home_data", _, socket) do
     # TODO: Make this not awful
     categories =

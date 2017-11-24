@@ -18,8 +18,12 @@ config :firestorm, FirestormWeb.Endpoint,
   url: [scheme: "https", host: "firestorm-forum-desmonddai583.herokuapp.com", port: 443],
   orce_ssl: [rewrite_on: [:x_forwarded_proto]],
   secret_key_base: System.get_env("SECRET_KEY_BASE"),
-  instrumenters: [PryIn.Instrumenter],
+  instrumenters: [PryIn.Instrumenter, Appsignal.Phoenix.Instrumenter],
   cache_static_manifest: "priv/static/cache_manifest.json"
+
+config :phoenix, :template_engines,
+  eex: Appsignal.Phoenix.Template.EExEngine,
+  exs: Appsignal.Phoenix.Template.ExsEngine
 
 # Should we send instrumentation to PryIn?
 config :firestorm_web, use_pryin: true
@@ -32,7 +36,8 @@ config :firestorm, Firestorm.Repo,
   adapter: Ecto.Adapters.Postgres,
   url: System.get_env("DATABASE_URL"),
   pool_size: String.to_integer(System.get_env("POOL_SIZE") || "10"),
-  ssl: true
+  ssl: true,
+  loggers: [Appsignal.Ecto, Ecto.LogEntry]
 
 config :pryin,
   enabled: true,
